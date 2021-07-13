@@ -1,6 +1,6 @@
 """
 Creates interactive lightcurve and periodograms that can be controlled by
-Jupyter notebook widgets. 
+Jupyter notebook widgets. Requires the ipywidgets package.
 """
 
 import lightkurve as lk
@@ -42,7 +42,8 @@ def generate_plots(KIC, period, bin_size):
     KIC_ID = 'KIC ' + str(KIC)
     
     # Get Porb from data
-    p_orb = data[data['KIC'] == KIC]['Porb'] 
+    p_orb = data[data['KIC'] == KIC]['Porb']
+    
     
     # Check for valid KIC ID before plotting
     try:
@@ -71,49 +72,50 @@ def generate_plots(KIC, period, bin_size):
         plt.show()
 
 
-#Create widgets
-style = {'description_width': 'initial'}
 
-
-KIC_box = Combobox(value=kic_list[0],
-                   placeholder='',
-                   options=kic_list,        # Match options to entries in data set
-                   description='KIC ID',
-                   style=style,
-                   disabled=False,
-                   grid_area = 'KIC_box',
-                   continuous_update=False)
-period_box = FloatText(value='5',
-                       placeholder='',
-                       description='Period (days)',
-                       style=style, disabled=False,
-                       grid_area = 'period_box',
-                       step = 0.001,
-                       continuous_update=False)
-bin_box = FloatText(value='0.02',
-                    placeholder='',
-                    description='Bin size',
-                    style=style,
-                    disabled=False,
-                    grid_area = 'bin_box',
-                    step = 0.001,
-                    continuous_update=False)
-
-widgridet = GridBox(children = [KIC_box, period_box, bin_box],
-                  layout=Layout(
-                  width ='1400px',
-                  align_items = 'flex-start',
-                  grid_template_rows = 'auto',
-                  grid_template_columns = '33% 34% 33%',
-                  grid_template_areas = '''
-                  "KIC_box period_box bin_box"
-                  ''')
-                 )
 
 
 def plots():
     """Displays widgets and plots"""
+    #Create widgets
+    style = {'description_width': 'initial'}
+
+
+    KIC_box = Combobox(value=kic_list[0],
+                       placeholder='',
+                       options=kic_list,        # Match options to entries in data set
+                       description='KIC ID',
+                       style=style,
+                       disabled=False,
+                       grid_area = 'KIC_box',
+                       continuous_update=False)
+    period_box = FloatText(value='5',
+                           placeholder='',
+                           description='Period (days)',
+                           style=style, disabled=False,
+                           grid_area = 'period_box',
+                           step = 0.001,
+                           continuous_update=False)
+    bin_box = FloatText(value='0.02',
+                        placeholder='',
+                        description='Bin size',
+                        style=style,
+                        disabled=False,
+                        grid_area = 'bin_box',
+                        step = 0.001,
+                        continuous_update=False)
+
+    widgridet = GridBox(children = [KIC_box, period_box, bin_box],
+                      layout=Layout(
+                      width ='1400px',
+                      align_items = 'flex-start',
+                      grid_template_rows = 'auto',
+                      grid_template_columns = '33% 34% 33%',
+                      grid_template_areas = '''
+                      "KIC_box period_box bin_box"
+                      ''')
+                     )
     out = interactive_output(generate_plots, {'KIC':KIC_box, 'period':period_box,'bin_size':bin_box})
-    return display(widgridet, out)
+    display(widgridet, out)
 
 
