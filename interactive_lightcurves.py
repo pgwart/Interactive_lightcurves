@@ -41,38 +41,38 @@ def generate_plots(KIC, period, bin_size):
     # Format ID for lightkurve functions
     KIC_ID = 'KIC ' + str(KIC)
     
-    # Get Porb from data
-    p_orb = data[data['KIC'] == KIC]['Porb']
-    
+    # Get Porb from CSV
+    p_orb = data[data['KIC'] == int(KIC)]['Porb'].values[0]
     
     # Check for valid KIC ID before plotting
     try:
         tpf = search_targetpixelfile(KIC_ID, author="Kepler", cadence="long").download()
         lc = tpf.to_lightcurve(aperture_mask=tpf.pipeline_mask).flatten(window_length=401)
-        folded_lc = lc.remove_nans().remove_outliers().fold(period=period*u.day).bin(time_bin_size=bin_size)
+        folded_lc = lc.remove_nans().remove_outliers().fold(period=period*u.day)
 
         periodogram = LombScarglePeriodogram.from_lightcurve(lc)
 
         fig, ax = plt.subplots(ncols=2, nrows=2, figsize=(25,10))
-        lc.plot(ax=ax[0,0])
-        folded_lc.plot(ax=ax[0,1])
+        lc.scatter(ax=ax[0,0])
+        folded_lc.bin(time_bin_size=bin_size).plot(ax=ax[0,1], c='red')
+        folded_lc.scatter(ax=ax[0,1])
         periodogram.plot(ax=ax[1,0])
         periodogram.plot(ax=ax[1,1], view='period', scale='log')
-        ax[1,1].add_artist(AnchoredText(f'Period at max power: {periodogram.period_at_max_power:.4f}\n'
-                                        + f'Period from literature: {p_orb}',
+        ax[1,1].add_artist(AnchoredText(f'Period at max power: {periodogram.period_at_max_power:.3f}\n'
+                                        + f'2 x Period at max power: {periodogram.period_at_max_power*2:.3f}\n'
+                                        + f'Period from literature: {p_orb} d',
                                         prop=dict(size=15), loc = 'lower right'))
+        
+        ax[1,1].axvline(periodogram.period_at_max_power/u.d, c='grey', linestyle='--')
+        ax[1,1].axvline(periodogram.period_at_max_power*2/u.d, c='grey', linestyle='--')
         
         plt.tight_layout()
         plt.show()
     
     except AttributeError:
         fig, ax = plt.subplots(ncols=2, nrows=2, figsize=(25,10))
-        ax[1,1].add_artist(AnchoredText('Target not found',prop=dict(size=15), loc = 'lower right'))
         plt.tight_layout()
         plt.show()
-
-
-
 
 
 def plots():
@@ -107,7 +107,7 @@ def plots():
 
     widgridet = GridBox(children = [KIC_box, period_box, bin_box],
                       layout=Layout(
-                      width ='1400px',
+                      width ='1200px',
                       align_items = 'flex-start',
                       grid_template_rows = 'auto',
                       grid_template_columns = '33% 34% 33%',
